@@ -1,15 +1,15 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
-import api from '../services/api'
 
 type User = {
   id?: number
   nome?: string
   email?: string
+  perfis?: string[]
 }
 
 type AuthContextType = {
   user: User | null
-  login: (token: string) => Promise<void>
+  login: (token: string, user: User) => void
   logout: () => void
 }
 
@@ -20,24 +20,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     const token = localStorage.getItem('token')
-    if (token) {
-      // optionally fetch user profile
-      api.get('/usuarios/me').then(r => setUser(r.data)).catch(() => setUser(null))
+    const storedUser = localStorage.getItem('user')
+    if (token && storedUser) {
+      setUser(JSON.parse(storedUser))
     }
   }, [])
 
-  const login = async (token: string) => {
+  const login = (token: string, authenticatedUser: User) => {
     localStorage.setItem('token', token)
-    try {
-      const resp = await api.get('/usuarios/me')
-      setUser(resp.data)
-    } catch {
-      setUser(null)
-    }
+    localStorage.setItem('user', JSON.stringify(authenticatedUser))
+    setUser(authenticatedUser)
   }
 
   const logout = () => {
     localStorage.removeItem('token')
+    localStorage.removeItem('user')
     setUser(null)
   }
 

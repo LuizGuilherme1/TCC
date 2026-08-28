@@ -1,19 +1,20 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/api'
+import { useAuth } from '../contexts/AuthContext'
 
 export default function Login() {
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
   const [error, setError] = useState('')
   const navigate = useNavigate()
+  const { login } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
       const resp = await api.post('/auth/login', { email, senha })
-      // Save token and redirect (simplified)
-      localStorage.setItem('token', resp.data.token)
+      login(resp.data.token, resp.data.usuario)
       navigate('/dashboard')
     } catch (err: any) {
       setError(err?.response?.data?.message || 'Erro ao autenticar')

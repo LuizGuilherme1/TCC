@@ -17,11 +17,11 @@ flyway:
   locations: classpath:db/migration
 
 server:
-  port: ${PORT:8085}
+  port: ${PORT:8086}
 
 jwt:
-  port: ${PORT:8085}
-  secret: ${JWT_SECRET:chave-secreta-do-tcc-2026}
+  port: ${PORT:8086}
+  secret: ${JWT_SECRET:chave-secreta-do-tcc-2026-segreda}
   expiration-ms: 3600000
 
 logging:
