@@ -24,15 +24,20 @@ public class UsuarioController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UsuarioResponse> get(@PathVariable Long id) {
+    public ResponseEntity<UsuarioResponse> get(@PathVariable("id") Long id) {
         Usuario u = usuarioService.findById(id).orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
         return ResponseEntity.ok(toResponse(u));
     }
 
     @PostMapping
     public ResponseEntity<UsuarioResponse> create(@RequestBody UsuarioRequest req) {
-        Usuario u = usuarioService.createUsuario(req, List.of("ALUNO")); // default ALUNO unless specified
+        Usuario u = usuarioService.createUsuario(req, List.of("ALUNO"));
         return ResponseEntity.ok(toResponse(u));
+    }
+
+    @PostMapping("/{id}/promover-professor")
+    public ResponseEntity<UsuarioResponse> promoverParaProfessor(@PathVariable("id") Long id) {
+        return ResponseEntity.ok(toResponse(usuarioService.promoverParaProfessor(id)));
     }
 
     private UsuarioResponse toResponse(Usuario u) {

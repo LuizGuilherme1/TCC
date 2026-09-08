@@ -34,7 +34,12 @@ export default function Login() {
           <label className="block">Senha</label>
           <input type="password" value={senha} onChange={e => setSenha(e.target.value)} className="w-full border p-2" />
         </div>
-        <button className="bg-blue-600 text-white px-4 py-2 rounded">Entrar</button>
+        <div className="flex items-center gap-3">
+          <button className="bg-blue-600 text-white px-4 py-2 rounded">Entrar</button>
+          <button type="button" onClick={() => navigate('/cadastro')} className="border border-blue-600 text-blue-600 px-4 py-2 rounded">
+            Cadastro
+          </button>
+        </div>
       </form>
     </div>
   )

@@ -32,18 +32,18 @@ public class AvaliacaoController {
     }
 
     @PostMapping("/{id}/iniciar")
-    public ResponseEntity<Avaliacao> iniciar(@PathVariable Long id) {
+    public ResponseEntity<Avaliacao> iniciar(@PathVariable("id") Long id) {
         return ResponseEntity.ok(avaliacaoService.iniciar(id));
     }
 
     @PostMapping("/{id}/respostas")
-    public ResponseEntity<RespostaAvaliacao> responder(@PathVariable Long id, @RequestBody RespostaAvaliacaoRequest req) {
+    public ResponseEntity<RespostaAvaliacao> responder(@PathVariable("id") Long id, @RequestBody RespostaAvaliacaoRequest req) {
         RespostaAvaliacao r = avaliacaoService.responder(id, req);
         return ResponseEntity.ok(r);
     }
 
     @PostMapping("/{id}/finalizar")
-    public ResponseEntity<Avaliacao> finalizar(@PathVariable Long id) {
+    public ResponseEntity<Avaliacao> finalizar(@PathVariable("id") Long id) {
         return ResponseEntity.ok(avaliacaoService.finalizar(id));
     }
 }

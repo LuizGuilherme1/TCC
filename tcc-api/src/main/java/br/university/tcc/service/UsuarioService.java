@@ -47,4 +47,24 @@ public class UsuarioService {
 
     public Optional<Usuario> findById(Long id) { return usuarioRepository.findById(id); }
     public List<Usuario> listAll() { return usuarioRepository.findAll(); }
+
+    public Usuario promoverParaProfessor(Long id) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
+
+        boolean jaEhProfessor = usuario.getUsuarioPerfis().stream()
+                .anyMatch(up -> "AVALIADOR".equals(up.getPerfil().getNome()));
+        usuario.getUsuarioPerfis().removeIf(up -> "ALUNO".equals(up.getPerfil().getNome()));
+        if (!jaEhProfessor) {
+            Perfil professor = perfilRepository.findByNome("AVALIADOR")
+                    .orElseThrow(() -> new IllegalArgumentException("Perfil de professor não encontrado"));
+            UsuarioPerfil usuarioPerfil = new UsuarioPerfil();
+            usuarioPerfil.setId(new UsuarioPerfilId());
+            usuarioPerfil.setUsuario(usuario);
+            usuarioPerfil.setPerfil(professor);
+            usuario.getUsuarioPerfis().add(usuarioPerfil);
+        }
+
+        return usuarioRepository.save(usuario);
+    }
 }

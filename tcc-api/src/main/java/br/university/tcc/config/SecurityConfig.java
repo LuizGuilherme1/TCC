@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
@@ -30,6 +31,14 @@ public class SecurityConfig {
                 .and()
                 .authorizeHttpRequests()
                 .requestMatchers("/api/auth/**", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/usuarios").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/usuarios/*/promover-professor")
+                .hasAnyAuthority("AVALIADOR", "ADMINISTRADOR")
+                .requestMatchers(HttpMethod.POST, "/api/projetos").hasAuthority("ALUNO")
+                .requestMatchers(HttpMethod.POST, "/api/projetos/*/comentarios")
+                .authenticated()
+                .requestMatchers("/api/avaliacoes/**")
+                .hasAnyAuthority("AVALIADOR", "ADMINISTRADOR")
                 .anyRequest().authenticated();
 
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
