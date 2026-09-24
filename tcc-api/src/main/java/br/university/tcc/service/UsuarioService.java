@@ -48,20 +48,27 @@ public class UsuarioService {
     public Optional<Usuario> findById(Long id) { return usuarioRepository.findById(id); }
     public List<Usuario> listAll() { return usuarioRepository.findAll(); }
 
-    public Usuario promoverParaProfessor(Long id) {
+        public Usuario promoverParaProfessor(Long id) {
+        return adicionarPerfil(id, "PROFESSOR");
+        }
+
+        public Usuario promoverParaAvaliador(Long id) {
+        return adicionarPerfil(id, "AVALIADOR");
+        }
+
+        private Usuario adicionarPerfil(Long id, String nomePerfil) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
 
-        boolean jaEhProfessor = usuario.getUsuarioPerfis().stream()
-                .anyMatch(up -> "AVALIADOR".equals(up.getPerfil().getNome()));
-        usuario.getUsuarioPerfis().removeIf(up -> "ALUNO".equals(up.getPerfil().getNome()));
-        if (!jaEhProfessor) {
-            Perfil professor = perfilRepository.findByNome("AVALIADOR")
-                    .orElseThrow(() -> new IllegalArgumentException("Perfil de professor não encontrado"));
+        boolean jaPossuiPerfil = usuario.getUsuarioPerfis().stream()
+            .anyMatch(up -> nomePerfil.equals(up.getPerfil().getNome()));
+        if (!jaPossuiPerfil) {
+            Perfil perfil = perfilRepository.findByNome(nomePerfil)
+                .orElseThrow(() -> new IllegalArgumentException("Perfil não encontrado: " + nomePerfil));
             UsuarioPerfil usuarioPerfil = new UsuarioPerfil();
             usuarioPerfil.setId(new UsuarioPerfilId());
             usuarioPerfil.setUsuario(usuario);
-            usuarioPerfil.setPerfil(professor);
+            usuarioPerfil.setPerfil(perfil);
             usuario.getUsuarioPerfis().add(usuarioPerfil);
         }
 

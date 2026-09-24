@@ -1,5 +1,6 @@
 package br.university.tcc.service;
 
+import br.university.tcc.dto.AvaliacaoRequest;
 import br.university.tcc.dto.RespostaAvaliacaoRequest;
 import br.university.tcc.entity.*;
 import br.university.tcc.repository.*;
@@ -19,28 +20,76 @@ public class AvaliacaoService {
     private final RespostaAvaliacaoRepository respostaAvaliacaoRepository;
     private final StatusAvaliacaoRepository statusAvaliacaoRepository;
     private final ProjetoIntegradorRepository projetoRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final SituacaoRepository situacaoRepository;
 
     public AvaliacaoService(AvaliacaoRepository avaliacaoRepository,
                             FormularioRepository formularioRepository,
                             FormularioPerguntaRepository formularioPerguntaRepository,
                             RespostaAvaliacaoRepository respostaAvaliacaoRepository,
                             StatusAvaliacaoRepository statusAvaliacaoRepository,
-                            ProjetoIntegradorRepository projetoRepository) {
+                            ProjetoIntegradorRepository projetoRepository,
+                            UsuarioRepository usuarioRepository,
+                            SituacaoRepository situacaoRepository) {
         this.avaliacaoRepository = avaliacaoRepository;
         this.formularioRepository = formularioRepository;
         this.formularioPerguntaRepository = formularioPerguntaRepository;
         this.respostaAvaliacaoRepository = respostaAvaliacaoRepository;
         this.statusAvaliacaoRepository = statusAvaliacaoRepository;
         this.projetoRepository = projetoRepository;
+        this.usuarioRepository = usuarioRepository;
+        this.situacaoRepository = situacaoRepository;
     }
 
-    public Avaliacao create(Avaliacao a) {
-        return avaliacaoRepository.save(a);
+        @Transactional
+        public Avaliacao create(AvaliacaoRequest req, String email) {
+        Usuario avaliador = usuarioRepository.findByEmail(email)
+            .orElseThrow(() -> new IllegalArgumentException("Avaliador não encontrado"));
+        boolean possuiPerfil = avaliador.getUsuarioPerfis().stream()
+            .anyMatch(up -> up.getPerfil() != null && ("AVALIADOR".equals(up.getPerfil().getNome()) || "ADMINISTRADOR".equals(up.getPerfil().getNome())));
+        if (!possuiPerfil) throw new IllegalArgumentException("Usuário não possui perfil de avaliador");
+
+        Formulario formulario = formularioRepository.findById(req.getFormularioId())
+            .orElseThrow(() -> new IllegalArgumentException("Formulário não encontrado"));
+        ProjetoIntegrador projeto = projetoRepository.findById(req.getProjetoIntegradorId())
+            .orElseThrow(() -> new IllegalArgumentException("Projeto não encontrado"));
+        if (projeto.getSituacao() == null || !"EM_AVALIACAO".equals(projeto.getSituacao().getNome())) {
+            throw new IllegalArgumentException("O projeto não está disponível para avaliação");
+        }
+        if (avaliacaoRepository.findByProjetoIntegradorIdAndUsuarioAvaliadorId(projeto.getId(), avaliador.getId()).isPresent()) {
+            throw new IllegalArgumentException("Você já possui uma avaliação para este projeto");
+        }
+
+        Avaliacao avaliacao = new Avaliacao();
+        avaliacao.setFormulario(formulario);
+        avaliacao.setProjetoIntegrador(projeto);
+        avaliacao.setUsuarioAvaliador(avaliador);
+        avaliacao.setStatusAvaliacao(statusAvaliacaoRepository.findById(1L)
+            .orElseThrow(() -> new IllegalArgumentException("Status PENDENTE não encontrado")));
+        return avaliacaoRepository.save(avaliacao);
     }
+
+        public List<FormularioPergunta> listarPerguntas(Long formularioId) {
+        return formularioPerguntaRepository.findByFormularioIdOrderByOrdem(formularioId);
+        }
+
+        public Formulario formularioPadrao() {
+            return formularioRepository.findByTitulo("Avaliação de Projeto Integrador")
+                    .orElseGet(() -> formularioRepository.findFirstByAtivoTrueOrderByIdAsc()
+                            .orElseThrow(() -> new IllegalArgumentException("Formulário padrão não encontrado. Execute as migrations do banco de dados.")));
+        }
+
+        public Avaliacao buscarDoProjeto(Long projetoId, String email) {
+        Usuario usuario = usuarioRepository.findByEmail(email)
+            .orElseThrow(() -> new IllegalArgumentException("Avaliador não encontrado"));
+        return avaliacaoRepository.findByProjetoIntegradorIdAndUsuarioAvaliadorId(projetoId, usuario.getId())
+            .orElseThrow(() -> new IllegalArgumentException("Avaliação não encontrada"));
+        }
 
     @Transactional
-    public Avaliacao iniciar(Long id) {
+    public Avaliacao iniciar(Long id, String email) {
         Avaliacao av = avaliacaoRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Avaliação não encontrada"));
+        validarAcesso(av, email);
         if (av.getStatusAvaliacao() != null && "FINALIZADA".equals(av.getStatusAvaliacao().getNome())) {
             throw new IllegalArgumentException("Não é possível iniciar avaliação finalizada");
         }
@@ -51,8 +100,9 @@ public class AvaliacaoService {
     }
 
     @Transactional
-    public RespostaAvaliacao responder(Long avaliacaoId, RespostaAvaliacaoRequest req) {
+    public RespostaAvaliacao responder(Long avaliacaoId, RespostaAvaliacaoRequest req, String email) {
         Avaliacao av = avaliacaoRepository.findById(avaliacaoId).orElseThrow(() -> new IllegalArgumentException("Avaliação não encontrada"));
+        validarAcesso(av, email);
         if (av.getStatusAvaliacao() != null && "FINALIZADA".equals(av.getStatusAvaliacao().getNome())) {
             throw new IllegalArgumentException("Avaliação finalizada não pode ser alterada");
         }
@@ -62,8 +112,12 @@ public class AvaliacaoService {
         }
 
         FormularioPergunta fp = formularioPerguntaRepository.findById(req.getFormularioPerguntaId()).orElseThrow(() -> new IllegalArgumentException("Pergunta do formulário não encontrada"));
+        if (!fp.getFormulario().getId().equals(av.getFormulario().getId())) {
+            throw new IllegalArgumentException("A pergunta não pertence ao formulário da avaliação");
+        }
 
-        RespostaAvaliacao ra = new RespostaAvaliacao();
+        RespostaAvaliacao ra = respostaAvaliacaoRepository.findByAvaliacaoIdAndFormularioPerguntaId(avaliacaoId, fp.getId())
+                .orElseGet(RespostaAvaliacao::new);
         ra.setAvaliacao(av);
         ra.setFormularioPergunta(fp);
         ra.setPontuacao(req.getPontuacao());
@@ -72,8 +126,9 @@ public class AvaliacaoService {
     }
 
     @Transactional
-    public Avaliacao finalizar(Long id) {
+    public Avaliacao finalizar(Long id, String observacao, String email) {
         Avaliacao av = avaliacaoRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Avaliação não encontrada"));
+        validarAcesso(av, email);
         if (av.getStatusAvaliacao() != null && "FINALIZADA".equals(av.getStatusAvaliacao().getNome())) {
             throw new IllegalArgumentException("Avaliação já finalizada");
         }
@@ -94,18 +149,22 @@ public class AvaliacaoService {
         av.setDataHoraFinalizacao(LocalDateTime.now());
         StatusAvaliacao finalizada = statusAvaliacaoRepository.findById(3L).orElseThrow(() -> new IllegalArgumentException("Status FINALIZADA não encontrado"));
         av.setStatusAvaliacao(finalizada);
+    av.setObservacao(observacao);
 
         // update projeto situacao to AVALIADO (id 3) - simplistic rule
         ProjetoIntegrador projeto = av.getProjetoIntegrador();
         if (projeto != null) {
-            Situacao sAvaliado = projeto.getSituacao();
-            if (sAvaliado == null || !"AVALIADO".equals(sAvaliado.getNome())) {
-                // try fetch situacao id 3
-                // Only change if available
-                // not forcing
-            }
+            projeto.setSituacao(situacaoRepository.findById(3L)
+                    .orElseThrow(() -> new IllegalArgumentException("Situação AVALIADO não encontrada")));
+            projetoRepository.save(projeto);
         }
 
         return avaliacaoRepository.save(av);
+    }
+
+    private void validarAcesso(Avaliacao avaliacao, String email) {
+        if (avaliacao.getUsuarioAvaliador() == null || !email.equals(avaliacao.getUsuarioAvaliador().getEmail())) {
+            throw new IllegalArgumentException("Você não tem acesso a esta avaliação");
+        }
     }
 }

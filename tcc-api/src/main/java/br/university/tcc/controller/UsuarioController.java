@@ -35,9 +35,14 @@ public class UsuarioController {
         return ResponseEntity.ok(toResponse(u));
     }
 
-    @PostMapping("/{id}/promover-professor")
+    @PostMapping({"/{id}/promover-professor"})
     public ResponseEntity<UsuarioResponse> promoverParaProfessor(@PathVariable("id") Long id) {
         return ResponseEntity.ok(toResponse(usuarioService.promoverParaProfessor(id)));
+    }
+
+    @PostMapping("/{id}/promover-avaliador")
+    public ResponseEntity<UsuarioResponse> promoverParaAvaliador(@PathVariable("id") Long id) {
+        return ResponseEntity.ok(toResponse(usuarioService.promoverParaAvaliador(id)));
     }
 
     private UsuarioResponse toResponse(Usuario u) {

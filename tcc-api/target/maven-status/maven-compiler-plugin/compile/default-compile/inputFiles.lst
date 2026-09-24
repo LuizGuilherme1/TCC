@@ -9,12 +9,14 @@ C:\Users\Luiz Guilherme\Desktop\ProjetoTCC\TCC\tcc-api\src\main\java\br\universi
 C:\Users\Luiz Guilherme\Desktop\ProjetoTCC\TCC\tcc-api\src\main\java\br\university\tcc\repository\RespostaAvaliacaoRepository.java
 C:\Users\Luiz Guilherme\Desktop\ProjetoTCC\TCC\tcc-api\src\main\java\br\university\tcc\security\JwtAuthenticationFilter.java
 C:\Users\Luiz Guilherme\Desktop\ProjetoTCC\TCC\tcc-api\src\main\java\br\university\tcc\entity\Perfil.java
+C:\Users\Luiz Guilherme\Desktop\ProjetoTCC\TCC\tcc-api\src\main\java\br\university\tcc\dto\AvaliacaoProjetoResponse.java
 C:\Users\Luiz Guilherme\Desktop\ProjetoTCC\TCC\tcc-api\src\main\java\br\university\tcc\entity\ProjetoAluno.java
 C:\Users\Luiz Guilherme\Desktop\ProjetoTCC\TCC\tcc-api\src\main\java\br\university\tcc\config\SecurityConfig.java
 C:\Users\Luiz Guilherme\Desktop\ProjetoTCC\TCC\tcc-api\src\main\java\br\university\tcc\controller\AvaliacaoController.java
 C:\Users\Luiz Guilherme\Desktop\ProjetoTCC\TCC\tcc-api\src\main\java\br\university\tcc\controller\AuthController.java
 C:\Users\Luiz Guilherme\Desktop\ProjetoTCC\TCC\tcc-api\src\main\java\br\university\tcc\entity\Situacao.java
 C:\Users\Luiz Guilherme\Desktop\ProjetoTCC\TCC\tcc-api\src\main\java\br\university\tcc\entity\Comentario.java
+C:\Users\Luiz Guilherme\Desktop\ProjetoTCC\TCC\tcc-api\src\main\java\br\university\tcc\dto\RespostaAvaliacaoResponse.java
 C:\Users\Luiz Guilherme\Desktop\ProjetoTCC\TCC\tcc-api\src\main\java\br\university\tcc\repository\AvaliacaoRepository.java
 C:\Users\Luiz Guilherme\Desktop\ProjetoTCC\TCC\tcc-api\src\main\java\br\university\tcc\repository\UsuarioRepository.java
 C:\Users\Luiz Guilherme\Desktop\ProjetoTCC\TCC\tcc-api\src\main\java\br\university\tcc\dto\FormularioRequest.java
@@ -38,6 +40,7 @@ C:\Users\Luiz Guilherme\Desktop\ProjetoTCC\TCC\tcc-api\src\main\java\br\universi
 C:\Users\Luiz Guilherme\Desktop\ProjetoTCC\TCC\tcc-api\src\main\java\br\university\tcc\dto\UsuarioRequest.java
 C:\Users\Luiz Guilherme\Desktop\ProjetoTCC\TCC\tcc-api\src\main\java\br\university\tcc\service\ProjetoService.java
 C:\Users\Luiz Guilherme\Desktop\ProjetoTCC\TCC\tcc-api\src\main\java\br\university\tcc\repository\PerfilRepository.java
+C:\Users\Luiz Guilherme\Desktop\ProjetoTCC\TCC\tcc-api\src\main\java\br\university\tcc\dto\FinalizarAvaliacaoRequest.java
 C:\Users\Luiz Guilherme\Desktop\ProjetoTCC\TCC\tcc-api\src\main\java\br\university\tcc\dto\ComentarioResponse.java
 C:\Users\Luiz Guilherme\Desktop\ProjetoTCC\TCC\tcc-api\src\main\java\br\university\tcc\entity\FormularioPergunta.java
 C:\Users\Luiz Guilherme\Desktop\ProjetoTCC\TCC\tcc-api\src\main\java\br\university\tcc\controller\ComentarioController.java

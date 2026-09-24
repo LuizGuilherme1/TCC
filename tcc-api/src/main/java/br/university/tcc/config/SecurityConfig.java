@@ -32,7 +32,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests()
                 .requestMatchers("/api/auth/**", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/usuarios").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/usuarios/*/promover-professor")
+                .requestMatchers(HttpMethod.POST, "/api/usuarios/*/promover-avaliador", "/api/usuarios/*/promover-professor")
                 .hasAnyAuthority("AVALIADOR", "ADMINISTRADOR")
                 .requestMatchers(HttpMethod.POST, "/api/projetos").hasAuthority("ALUNO")
                 .requestMatchers(HttpMethod.POST, "/api/projetos/*/comentarios")

@@ -2,12 +2,17 @@ package br.university.tcc.service;
 
 import br.university.tcc.dto.ProjetoIntegradorRequest;
 import br.university.tcc.dto.ProjetoResponse;
+import br.university.tcc.dto.AvaliacaoProjetoResponse;
+import br.university.tcc.dto.RespostaAvaliacaoResponse;
+import br.university.tcc.entity.Avaliacao;
 import br.university.tcc.entity.ProjetoAluno;
 import br.university.tcc.entity.ProjetoIntegrador;
 import br.university.tcc.repository.ProjetoAlunoRepository;
 import br.university.tcc.repository.ProjetoIntegradorRepository;
 import br.university.tcc.repository.SituacaoRepository;
 import br.university.tcc.repository.UsuarioRepository;
+import br.university.tcc.repository.AvaliacaoRepository;
+import br.university.tcc.repository.RespostaAvaliacaoRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,15 +25,21 @@ public class ProjetoService {
     private final ProjetoAlunoRepository projetoAlunoRepository;
     private final UsuarioRepository usuarioRepository;
     private final SituacaoRepository situacaoRepository;
+    private final AvaliacaoRepository avaliacaoRepository;
+    private final RespostaAvaliacaoRepository respostaAvaliacaoRepository;
 
     public ProjetoService(ProjetoIntegradorRepository projetoRepository,
                           ProjetoAlunoRepository projetoAlunoRepository,
                           UsuarioRepository usuarioRepository,
-                          SituacaoRepository situacaoRepository) {
+                          SituacaoRepository situacaoRepository,
+                          AvaliacaoRepository avaliacaoRepository,
+                          RespostaAvaliacaoRepository respostaAvaliacaoRepository) {
         this.projetoRepository = projetoRepository;
         this.projetoAlunoRepository = projetoAlunoRepository;
         this.usuarioRepository = usuarioRepository;
         this.situacaoRepository = situacaoRepository;
+        this.avaliacaoRepository = avaliacaoRepository;
+        this.respostaAvaliacaoRepository = respostaAvaliacaoRepository;
     }
 
     @Transactional
@@ -107,6 +118,28 @@ public class ProjetoService {
         response.setSituacao(projeto.getSituacao().getNome());
         response.setAlunos(projetoAlunoRepository.findByProjetoIntegradorId(projeto.getId()).stream()
                 .map(vinculo -> vinculo.getUsuarioAluno().getNome()).collect(Collectors.toList()));
+        response.setAvaliacoes(avaliacaoRepository
+                .findByProjetoIntegradorIdAndStatusAvaliacaoNomeOrderByIdAsc(projeto.getId(), "FINALIZADA")
+                .stream().map(this::toAvaliacaoResponse).collect(Collectors.toList()));
+        return response;
+    }
+
+    private AvaliacaoProjetoResponse toAvaliacaoResponse(Avaliacao avaliacao) {
+        AvaliacaoProjetoResponse response = new AvaliacaoProjetoResponse();
+        response.setId(avaliacao.getId());
+        response.setAvaliador(avaliacao.getUsuarioAvaliador().getNome());
+        response.setPontuacaoTotal(avaliacao.getPontuacaoTotal());
+        response.setMedia(avaliacao.getMedia());
+        response.setObservacao(avaliacao.getObservacao());
+        response.setRespostas(respostaAvaliacaoRepository.findByAvaliacaoId(avaliacao.getId()).stream()
+                .sorted((a, b) -> Integer.compare(a.getFormularioPergunta().getOrdem(), b.getFormularioPergunta().getOrdem()))
+                .map(resposta -> {
+                    RespostaAvaliacaoResponse item = new RespostaAvaliacaoResponse();
+                    item.setOrdem(resposta.getFormularioPergunta().getOrdem());
+                    item.setPergunta(resposta.getFormularioPergunta().getPergunta().getTitulo());
+                    item.setPontuacao(resposta.getPontuacao());
+                    return item;
+                }).collect(Collectors.toList()));
         return response;
     }
 }

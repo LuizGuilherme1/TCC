@@ -12,6 +12,7 @@ public class ProjetoResponse {
     private LocalDate dataAvaliacao;
     private String situacao;
     private List<String> alunos;
+    private List<AvaliacaoProjetoResponse> avaliacoes;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -29,4 +30,6 @@ public class ProjetoResponse {
     public void setSituacao(String situacao) { this.situacao = situacao; }
     public List<String> getAlunos() { return alunos; }
     public void setAlunos(List<String> alunos) { this.alunos = alunos; }
+    public List<AvaliacaoProjetoResponse> getAvaliacoes() { return avaliacoes; }
+    public void setAvaliacoes(List<AvaliacaoProjetoResponse> avaliacoes) { this.avaliacoes = avaliacoes; }
 }
